@@ -11,7 +11,7 @@ import Test.QuickCheck
 
 -- A1
 -- A function that returns an empty hand
--- Function is never used, since we use a Capital letter for Empty instead..
+-- This function is however never used, since we use a Capital letter for Empty instead..
 empty :: Hand
 empty = Empty
 
@@ -30,7 +30,7 @@ numberOfAces Empty = 0
 numberOfAces (Add (Card Ace _) h) = 1 + numberOfAces h
 numberOfAces (Add c h) = numberOfAces h
 
--- Returns the value of a hand with Ace being always 11
+-- Returns the value of a hand with Ace always being 11
 initialValue :: Hand -> Integer
 initialValue Empty = 0
 initialValue (Add c h) = valueCard c + initialValue h
@@ -48,19 +48,19 @@ valueRank Ace = 11
 valueRank (Numeric a) = a
 valueRank _ = 10 
 
-exampleHandBust = (Add (Card Jack Spades)
-              (Add (Card Ace Hearts)
-              (Add (Card (Numeric 2) Spades)
-              (Add (Card Queen Spades)
+exampleHandBust = (Add (Card Jack Spades)   --10
+              (Add (Card Ace Hearts)        --10+1
+              (Add (Card (Numeric 2) Spades)--10+1+2
+              (Add (Card Queen Spades)      --10+1+2+10
               Empty))))
 
-exampleHand13 = (Add (Card Ace Hearts)
-              (Add (Card (Numeric 2) Spades)
-              (Add (Card Queen Spades)
+exampleHand13 = (Add (Card Ace Hearts)      --1
+              (Add (Card (Numeric 2) Spades)--1+2
+              (Add (Card Queen Spades)      --1+2+10
               Empty)))
 
-exampleHand17 = (Add (Card King Hearts)
-              (Add (Card (Numeric 7) Spades)
+exampleHand17 = (Add (Card King Hearts)     --10
+              (Add (Card (Numeric 7) Spades)--10+7
               Empty))
 -- A3
 -- Returns true if the hand's value is above 21
@@ -72,7 +72,7 @@ gameOver hand = value hand > 21
 -- 1. the Guest's Hand, 2. the Bank's hand
 -- Starts by checking if the player is bust, which always means Bank won
 -- Afterwards checks if the Bank is bust, which means that Guest won
--- Finally tests if the Bank has a higher or equal value to the Guest
+-- Finally checks if the Bank has a higher or equal value to the Guest
 winner :: Hand -> Hand -> Player
 winner guest _    | gameOver guest = Bank
 winner _ bank     | gameOver bank = Guest
