@@ -74,7 +74,7 @@ gameOver hand = value hand > 21
 -- Afterwards checks if the Bank is bust, which means that Guest won
 -- Finally checks if the Bank has a higher or equal value to the Guest
 winner :: Hand -> Hand -> Player
-winner guest _    | gameOver guest = Bank
-winner _ bank     | gameOver bank = Guest
-winner guest bank | value bank >= value guest = Bank
-                  | otherwise = Guest
+winner guest bank   | gameOver guest = Bank
+                    | gameOver bank = Guest
+                    | value bank >= value guest = Bank
+                    | otherwise = Guest
