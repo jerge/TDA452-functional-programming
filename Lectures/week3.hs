@@ -1,5 +1,6 @@
 import Prelude hiding (map, filter,sum,product,concat,foldr,takeWhile,dropWhile,lines)
 import Data.Char(isSpace)
+import Data.List(sort, group)
 
 evens = filter even [1..10]
 
@@ -78,3 +79,50 @@ product'    xs = foldr (*) 1 xs
 concat'     xss = foldr (++) [] xss
 and'        xs = foldr (&&) True xs
 else'        xs = foldr (||) False xs
+
+weather = "June is warm\nJuly is warm\nJanuary is cold\n"
+
+takeLine "" = ""
+takeLine (c:cs) | c == '\n' = ""
+                | otherwise = c:takeLine cs
+
+takeWord "" = ""
+takeWord (c:cs) | isSpace c = "" -- Space character  can be ' ', '\n', '.' etc.
+                | otherwise = c:takeWord cs
+
+-- Higher order function
+takeWhile p [] = []
+takeWhile p (c:cs)  | p c = c:takeWhile p cs
+                    | otherwise = []
+
+takeLine' s = takeWhile (/='\n') s
+
+takeWord' s = takeWhile (not . isSpace) s
+
+-- takeWhile (\c->'a'<=c && c<='f') "absdsadnnbkhajsdömawdlk"
+
+dropWhile p [] = []
+dropWhile p (x:xs)  | p x = dropWhile p xs
+                    | otherwise = x:xs
+
+--dropLine s = dropWhile (/='\n') s
+--dropLine s = tail (dropWhile (/='\n') s)
+dropLine s = drop 1 (dropWhile (/='\n') s)
+
+lines :: String -> [String]
+lines [] = []
+lines s = takeLine s:lines (dropLine s)
+
+segments :: (a->Bool) -> [a] -> [[a]]
+segments p [] = []
+segments p xs = takeWhile p xs: segments p (drop 1 (dropWhile p xs))
+
+wordCounts :: String -> String
+wordCounts = unlines
+            . map (\(n,w) -> w++": "++show n)
+            . reverse
+            . sort
+            . map (\ws -> (length ws, head ws))
+            . group 
+            . sort 
+            . words
