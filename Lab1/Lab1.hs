@@ -11,7 +11,7 @@ power n k = n * power n (k-1)
 power1 :: Integer -> Integer -> Integer
 power1 n k | k < 0 = error "power: negative argument"
 power1 n 0 = 1
-power1 n k = product( [ n | x <- [1..k]] )
+power1 n k = product [ n | x <- [1..k]]
 
 -- Part 3
 power2 :: Integer -> Integer -> Integer
@@ -36,8 +36,8 @@ prop_powers :: Integer -> Integer -> Bool
 prop_powers n k = power n k == power1 n k && power1 n k == power2 n k
 
 -- C.
-check_powers :: Bool
-check_powers = and [ prop_powers n k | (n,k) <- testCases ] 
+checkPowers :: Bool
+checkPowers = and [ prop_powers n k | (n,k) <- testCases ] 
 
 -- D.
 -- It failed for negative k's :(
