@@ -20,9 +20,8 @@ empty = Empty
 -- Otherwise it returns the value of a hand as if Ace is 11 
 -- but removes 10 for each ace in the hand (i.e. Ace has value 1)
 value :: Hand -> Integer
-value hand = if initialValue hand <= 21
-             then initialValue hand
-             else (initialValue hand - (numberOfAces hand * 10))
+value hand | initialValue hand <= 21 = initialValue hand
+           | otherwise = initialValue hand - numberOfAces hand * 10
 
 -- Calculates the amount of Aces in a hand recursively
 numberOfAces :: Hand -> Integer
@@ -48,20 +47,20 @@ valueRank Ace = 11
 valueRank (Numeric a) = a
 valueRank _ = 10 
 
-exampleHandBust = (Add (Card Jack Spades)   --10
+exampleHandBust = Add (Card Jack Spades)   --10
               (Add (Card Ace Hearts)        --10+1
               (Add (Card (Numeric 2) Spades)--10+1+2
               (Add (Card Queen Spades)      --10+1+2+10
-              Empty))))
-
-exampleHand13 = (Add (Card Ace Hearts)      --1
-              (Add (Card (Numeric 2) Spades)--1+2
-              (Add (Card Queen Spades)      --1+2+10
               Empty)))
 
-exampleHand17 = (Add (Card King Hearts)     --10
-              (Add (Card (Numeric 7) Spades)--10+7
+exampleHand13 = Add (Card Ace Hearts)      --1
+              (Add (Card (Numeric 2) Spades)--1+2
+              (Add (Card Queen Spades)      --1+2+10
               Empty))
+
+exampleHand17 = Add (Card King Hearts)     --10
+              (Add (Card (Numeric 7) Spades)--10+7
+              Empty)
 -- A3
 -- Returns true if the hand's value is above 21
 gameOver :: Hand -> Bool
