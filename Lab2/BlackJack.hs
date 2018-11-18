@@ -77,3 +77,18 @@ winner guest bank   | gameOver guest = Bank
                     | gameOver bank = Guest
                     | value bank >= value guest = Bank
                     | otherwise = Guest
+
+-- B1
+(<+) :: Hand -> Hand -> Hand
+Empty <+ h2 = h2
+h1 <+ Empty = h1
+(Add c1 h1) <+ (Add c2 h2) = Add c1 (h1 <+ Add c2 h2)
+
+prop_onTopOf_assoc :: Hand -> Hand -> Hand -> Bool
+prop_onTopOf_assoc p1 p2 p3 =
+  p1 <+ (p2 <+ p3) == (p1 <+ p2) <+ p3
+
+prop_size_onTopOf :: Hand -> Hand -> Bool
+prop_size_onTopOf p1 p2 =
+  size p1 + size p2 == size (p1 <+ p2)
+
