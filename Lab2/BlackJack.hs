@@ -92,3 +92,24 @@ prop_size_onTopOf :: Hand -> Hand -> Bool
 prop_size_onTopOf p1 p2 =
   size p1 + size p2 == size (p1 <+ p2)
 
+-- B2
+
+fullDeck :: Hand
+fullDeck = fullSuit Hearts <+ 
+          fullSuit Diamonds <+ 
+          fullSuit Spades <+ 
+          fullSuit Clubs
+
+fullSuit :: Suit -> Hand
+fullSuit suit = Add (Card Ace suit)
+              (Add (Card King suit)
+              (Add (Card Queen suit)
+              (Add (Card Jack suit)
+              Empty))) <+ fullNumerical 10 suit
+
+fullNumerical :: Integer -> Suit -> Hand
+fullNumerical 2 suit = Add (Card (Numeric 2) suit) Empty
+fullNumerical n suit = Add (Card (Numeric n) suit) (fullNumerical (n-1) suit)
+                where n <= 10
+
+-- B3
