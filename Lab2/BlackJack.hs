@@ -1,7 +1,9 @@
 module BlackJack where
 import Cards
 import RunGame
-import Test.QuickCheck
+import Test.QuickCheck hiding (shuffle)
+import System.Random
+
 -- A0 
 -- size (Add (Card (Numeric 2) Hearts) (Add (Card Jack Spades) Empty)) =
 -- 1 + size (Add (Card Jack Spades) Empty) =
@@ -107,9 +109,24 @@ fullSuit suit = Add (Card Ace suit)
               (Add (Card Jack suit)
               Empty))) <+ fullNumerical 10 suit
 
+-- Returns a hand of all numbers between 2-10 with the specified suit
 fullNumerical :: Integer -> Suit -> Hand
 fullNumerical 2 suit = Add (Card (Numeric 2) suit) Empty
-fullNumerical n suit = Add (Card (Numeric n) suit) (fullNumerical (n-1) suit)
-                where n <= 10
+fullNumerical n suit | n <= 10 = Add (
+                                      Card (Numeric n) suit)
+                                      (fullNumerical (n-1) suit)
 
 -- B3
+draw :: Hand -> Hand -> (Hand, Hand)
+draw Empty hand = error "draw: The deck is empty"
+draw (Add card deck) hand  = (deck, Add card hand)
+
+-- B4
+playBank :: Hand -> Hand
+playBank deck = playBank' deck Empty
+
+playBank' :: Hand -> Hand -> Hand
+playBank' deck bankHand | value bankHand < 16 = playBank' deck' bankHand'
+                        | otherwise           = bankHand
+                          where (deck', bankHand') = draw deck bankHand
+
