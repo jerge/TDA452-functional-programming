@@ -130,3 +130,30 @@ playBank' deck bankHand | value bankHand < 16 = playBank' deck' bankHand'
                         | otherwise           = bankHand
                           where (deck', bankHand') = draw deck bankHand
 
+shuffle :: StdGen -> Hand -> Hand
+shuffle g1 deck | size deck > 0 = getNthCard deck n <+ shuffle g2 (removeNthCard deck n)
+                | otherwise     = deck
+  where (n, g2) = randomR (0, size deck) g1
+
+-- Returns a Hand with the nth card at the beginning followed by the
+-- remaining deck
+getNthCard :: Hand -> Integer -> Hand
+getNthCard Empty n           = Empty
+getNthCard (Add card hand) 0 = Add card Empty
+getNthCard (Add card hand) n = getNthCard hand (n - 1) 
+
+removeNthCard :: Hand -> Integer -> Hand
+removeNthCard Empty _           = Empty
+removeNthCard (Add card hand) 0 = hand
+removeNthCard (Add card hand) n = Add card (removeNthCard hand (n - 1))
+
+prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
+prop_shuffle_sameCards g c h = 
+  c `belongsTo` h == c `belongsTo` shuffle g h
+
+belongsTo :: Card -> Hand -> Bool
+c `belongsTo` Empty = False
+c `belongsTo` (Add c' h) = c == c' || c `belongsTo` h
+
+prop_size_shuffle :: StdGen -> Hand -> Bool
+prop_size_shuffle g h = size h == size (shuffle g h)
