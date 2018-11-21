@@ -13,7 +13,6 @@ import System.Random
 
 -- A1
 -- A function that returns an empty hand
--- This function is however never used, since we use a Capital letter for Empty instead..
 empty :: Hand
 empty = Empty
 
@@ -49,20 +48,6 @@ valueRank Ace = 11
 valueRank (Numeric a) = a
 valueRank _ = 10 
 
-exampleHandBust = Add (Card Jack Spades)   --10
-              (Add (Card Ace Hearts)        --10+1
-              (Add (Card (Numeric 2) Spades)--10+1+2
-              (Add (Card Queen Spades)      --10+1+2+10
-              Empty)))
-
-exampleHand13 = Add (Card Ace Hearts)      --1
-              (Add (Card (Numeric 2) Spades)--1+2
-              (Add (Card Queen Spades)      --1+2+10
-              Empty))
-
-exampleHand17 = Add (Card King Hearts)     --10
-              (Add (Card (Numeric 7) Spades)--10+7
-              Empty)
 -- A3
 -- Returns true if the hand's value is above 21
 gameOver :: Hand -> Bool
@@ -86,22 +71,25 @@ Empty <+ h2 = h2
 h1 <+ Empty = h1
 (Add c1 h1) <+ (Add c2 h2) = Add c1 (h1 <+ Add c2 h2)
 
+-- Taken directly from the assignment
 prop_onTopOf_assoc :: Hand -> Hand -> Hand -> Bool
 prop_onTopOf_assoc p1 p2 p3 =
   p1 <+ (p2 <+ p3) == (p1 <+ p2) <+ p3
 
+-- Checks if the size of the individual hands are equal to the joint hand
 prop_size_onTopOf :: Hand -> Hand -> Bool
 prop_size_onTopOf p1 p2 =
   size p1 + size p2 == size (p1 <+ p2)
 
 -- B2
-
+-- Joins a deck full of each different suit
 fullDeck :: Hand
 fullDeck = fullSuit Hearts <+ 
           fullSuit Diamonds <+ 
           fullSuit Spades <+ 
           fullSuit Clubs
 
+-- Fills all cards of a specific suit
 fullSuit :: Suit -> Hand
 fullSuit suit = Add (Card Ace suit)
               (Add (Card King suit)
@@ -117,21 +105,26 @@ fullNumerical n suit | n <= 10 = Add (
                                       (fullNumerical (n-1) suit)
 
 -- B3
+-- Removes the top card from deck and puts it on the hand
 draw :: Hand -> Hand -> (Hand, Hand)
 draw Empty hand = error "draw: The deck is empty"
 draw (Add card deck) hand  = (deck, Add card hand)
 
 -- B4
+-- Plays for the bank using a wrapper, 
+-- because the type declaration was insufficient
 playBank :: Hand -> Hand
 playBank deck = playBank' deck Empty
-
+-- Plays for the bank with an extra argument (bankHand)
 playBank' :: Hand -> Hand -> Hand
 playBank' deck bankHand | value bankHand < 16 = playBank' deck' bankHand'
                         | otherwise           = bankHand
                           where (deck', bankHand') = draw deck bankHand
-
+-- B5
+-- Shuffles a hand, given a random number generator
 shuffle :: StdGen -> Hand -> Hand
-shuffle g1 deck | size deck > 0 = getNthCard deck n <+ shuffle g2 (removeNthCard deck n)
+shuffle g1 deck | size deck > 0 = 
+                      getNthCard deck n <+ shuffle g2 (removeNthCard deck n)
                 | otherwise     = deck
   where (n, g2) = randomR (0, size deck) g1
 
@@ -142,19 +135,26 @@ getNthCard Empty n           = Empty
 getNthCard (Add card hand) 0 = Add card Empty
 getNthCard (Add card hand) n = getNthCard hand (n - 1) 
 
-removeNthCard :: Hand -> Integer -> Hand
+-- Recursively keeps the first n-1 cards in all in the Hand, 
+-- then removes the nth card.
+removeNthCard :: Hand -> Integer -> Hand 
 removeNthCard Empty _           = Empty
 removeNthCard (Add card hand) 0 = hand
 removeNthCard (Add card hand) n = Add card (removeNthCard hand (n - 1))
 
+-- Checks if a card belongs both in a hand and
+-- in that hand when it has been shuffled
 prop_shuffle_sameCards :: StdGen -> Card -> Hand -> Bool
 prop_shuffle_sameCards g c h = 
   c `belongsTo` h == c `belongsTo` shuffle g h
 
+-- Checks if a card exists in a hand
 belongsTo :: Card -> Hand -> Bool
 c `belongsTo` Empty = False
 c `belongsTo` (Add c' h) = c == c' || c `belongsTo` h
 
+-- Checks if the size of a hand is the same as
+-- the size of the hand after shuffling it
 prop_size_shuffle :: StdGen -> Hand -> Bool
 prop_size_shuffle g h = size h == size (shuffle g h)
 
