@@ -154,16 +154,16 @@ module Overloading where
     prop_Ace c = not (c `cardBeats` Card Ace Spades)
     
     -- | Any face card beats any numeric card of the same suit
-    prop_Face fc nc = (isFace fc && isNumeric nc && suit fc==suit nc)
-                       ==> (fc `cardBeats` nc)
+    --prop_Face fc nc = (isFace fc && isNumeric nc && suit fc==suit nc)
+                       -- ==> (fc `cardBeats` nc)
     
     isFace c = rank c>=Jack
     isNumeric c = rank c<Jack
     
     
     -- | Logical implication
-    infixr 0 ==>
-    h ==> c = not h || c
+    --infixr 0 ==>
+--    h ==> c = not h || c
     
     
     --------------------------------------------------------------------------------
