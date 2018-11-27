@@ -73,8 +73,8 @@ printSudoku (Sudoku (r:rs)) | rs /= [] = do putStrLn ((map $ maybe '.' intToDigi
 -- | readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
 readSudoku :: FilePath -> IO Sudoku
-readSudoku path = do file <- (readFile "example.sud")
-                     return (Sudoku (map (map charToMaybeInt) (lines(file))))
+readSudoku path = do file <- readFile path
+                     return (Sudoku (map (map charToMaybeInt) (lines file)))
 
 charToMaybeInt :: Char -> Maybe Int
 charToMaybeInt '.' = Nothing
