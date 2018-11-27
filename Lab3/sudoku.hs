@@ -2,6 +2,7 @@ module Sudoku where
 
 import Test.QuickCheck
 import Data.Maybe (isNothing)
+import Data.Char
 
 data Sudoku = Sudoku { rows :: [[Maybe Int]] }
   deriving (Eq, Show)
@@ -63,12 +64,9 @@ isFilledRow (r:rs) | isNothing r  = False
 -- | printSudoku sud prints a nice representation of the sudoku sud on
 -- the screen
 printSudoku :: Sudoku -> IO ()
-printSudoku (Sudoku (r:rs)) = print (unlines rs)
-
-printSudoku' :: [Maybe Int] -> String
-printSudoku' [] = []
-printSudoku' (r:rs) | isNothing r = "." ++ printSudoku' rs
-                    | otherwise = show r ++ printSudoku' rs
+printSudoku (Sudoku (r:rs)) | rs /= [] = do print ((map $ maybe '.' intToDigit) r)
+                                            printSudoku (Sudoku rs)
+                            | otherwise = print ((map $ maybe '.' intToDigit) r)
 
 -- * B2
 
