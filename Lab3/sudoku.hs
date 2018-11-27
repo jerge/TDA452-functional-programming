@@ -81,8 +81,8 @@ readSudoku = undefined
 
 -- | cell generates an arbitrary cell in a Sudoku
 cell :: Gen (Maybe Int)
-cell = undefined
-
+cell = frequency [(1, elements [Just n | n <- [1..9]]),
+                  (9, return Nothing)]
 
 -- * C2
 
@@ -95,7 +95,7 @@ instance Arbitrary Sudoku where
 -- * C3
 
 prop_Sudoku :: Sudoku -> Bool
-prop_Sudoku = undefined
+prop_Sudoku = isSudoku
 
 ------------------------------------------------------------------------------
 
