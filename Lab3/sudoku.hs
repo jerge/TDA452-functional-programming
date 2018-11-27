@@ -64,17 +64,21 @@ isFilledRow (r:rs) | isNothing r  = False
 -- | printSudoku sud prints a nice representation of the sudoku sud on
 -- the screen
 printSudoku :: Sudoku -> IO ()
-printSudoku (Sudoku (r:rs)) | rs /= [] = do print ((map $ maybe '.' intToDigit) r)
+printSudoku (Sudoku (r:rs)) | rs /= [] = do putStrLn ((map $ maybe '.' intToDigit) r)
                                             printSudoku (Sudoku rs)
-                            | otherwise = print ((map $ maybe '.' intToDigit) r)
+                            | otherwise = putStrLn ((map $ maybe '.' intToDigit) r)
 
 -- * B2
 
 -- | readSudoku file reads from the file, and either delivers it, or stops
 -- if the file did not contain a sudoku
 readSudoku :: FilePath -> IO Sudoku
-readSudoku = undefined
+readSudoku path = do file <- (readFile "example.sud")
+                     return (Sudoku (map (map charToMaybeInt) (lines(file))))
 
+charToMaybeInt :: Char -> Maybe Int
+charToMaybeInt '.' = Nothing
+charToMaybeInt c = Just (digitToInt c )
 ------------------------------------------------------------------------------
 
 -- * C1
