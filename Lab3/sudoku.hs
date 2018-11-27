@@ -109,7 +109,9 @@ type Block = [Maybe Int]
 -- * D1
 
 isOkayBlock :: Block -> Bool
-isOkayBlock = undefined
+isOkayBlock [] = True
+isOkayBlock (Nothing:rs) = isOkayBlock rs
+isOkayBlock (r:rs) = r `notElem` rs && isOkayBlock rs
 
 
 -- * D2
