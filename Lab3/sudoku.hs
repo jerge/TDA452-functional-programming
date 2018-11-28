@@ -129,12 +129,15 @@ squareBlock [] = []
 squareBlock s = concat (take 3 s):squareBlock (drop 3 s)
 
 prop_blocks_lengths :: Sudoku -> Bool
-prop_blocks_lengths = undefined
+prop_blocks_lengths s = length (blocks s) == 27 && prop_block_cells (rows s)
+
+prop_block_cells :: [Block] -> Bool
+prop_block_cells = foldr (\b -> (&&) (length b == 9)) True
 
 -- * D3
 
 isOkay :: Sudoku -> Bool
-isOkay = undefined
+isOkay s = all isOkayBlock (blocks s)
 
 
 ---- Part A ends here --------------------------------------------------------
