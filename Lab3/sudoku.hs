@@ -3,6 +3,7 @@ module Sudoku where
 import Test.QuickCheck
 import Data.Maybe (isNothing)
 import Data.Char
+import Data.List
 
 data Sudoku = Sudoku { rows :: [[Maybe Int]] }
   deriving (Eq, Show)
@@ -117,7 +118,15 @@ isOkayBlock (r:rs) = r `notElem` rs && isOkayBlock rs
 -- * D2
 
 blocks :: Sudoku -> [Block]
-blocks = undefined
+blocks s = rows s  ++ transpose (rows s) ++ squareBlocks (rows s)
+
+squareBlocks :: [Block] -> [Block]
+squareBlocks [] = []
+squareBlocks s = squareBlock (transpose (take 3 s)) ++ squareBlocks (drop 3 s)
+
+squareBlock :: [Block] -> [Block]
+squareBlock [] = []
+squareBlock s = concat (take 3 s):squareBlock (drop 3 s)
 
 prop_blocks_lengths :: Sudoku -> Bool
 prop_blocks_lengths = undefined
