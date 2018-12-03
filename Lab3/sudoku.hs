@@ -152,7 +152,16 @@ type Pos = (Int,Int)
 -- * E1
 
 blanks :: Sudoku -> [Pos]
-blanks = undefined
+blanks (Sudoku s) = blanks' s (0,0)
+
+blanks' :: [[Maybe Int]] -> Pos -> [Pos]
+blanks' [] _ = []
+blanks' (c:cs) (l,r) = blankInRow c (l,r) ++ blanks' cs (l+1,r)
+
+blankInRow :: [Maybe Int] -> Pos -> [Pos]
+blankInRow [] _ = []
+blankInRow (c:cs) (l,r) = if c == Nothing then (l,r) : rest else rest
+          where rest = blankInRow cs (l,r+1)
 
 --prop_blanks_allBlanks :: ...
 --prop_blanks_allBlanks =
