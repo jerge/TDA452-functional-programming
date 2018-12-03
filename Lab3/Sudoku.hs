@@ -156,39 +156,52 @@ blanks (Sudoku s) = blanks' s (0,0)
 
 blanks' :: [[Maybe Int]] -> Pos -> [Pos]
 blanks' [] _ = []
-blanks' (c:cs) (l,r) = blankInRow c (l,r) ++ blanks' cs (l+1,r)
+blanks' (x:xs) (r,c) = blankInRow x (r,c) ++ blanks' xs (r+1,c)
 
 blankInRow :: [Maybe Int] -> Pos -> [Pos]
 blankInRow [] _ = []
-blankInRow (c:cs) (l,r) = if c == Nothing then (l,r) : rest else rest
-          where rest = blankInRow cs (l,r+1)
+blankInRow (x:xs) (r,c) = if x == Nothing then (r,c) : rest else rest
+          where rest = blankInRow xs (r,c+1)
 
---prop_blanks_allBlanks :: ...
---prop_blanks_allBlanks =
+prop_blanks_allBlanks  :: Sudoku -> Bool
+prop_blanks_allBlanks s = correctBlanks s (blanks s)
+
+correctBlanks :: Sudoku -> [Pos] -> Bool
+correctBlanks s [] = True
+correctBlanks (Sudoku s) ((r,c):ps) =  
+      (s !! r) !! c == Nothing && correctBlanks (Sudoku s) ps
 
 
 -- * E2
 
 (!!=) :: [a] -> (Int,a) -> [a]
-xs !!= (i,y) = undefined
-
---prop_bangBangEquals_correct :: ...
---prop_bangBangEquals_correct =
+xs !!= (i,y) | length(xs) == 0
+            || length(xs) <= i 
+            || i < 0           = error "Index out of bounds"
+             | otherwise       = l++(y:rs)
+    where (l,r:rs) = splitAt i xs
+    
+-- QuickCheck tries to evaluate with arguments that throw errors
+prop_bangBangEquals_correct :: Eq a => [a] -> (Int, a) -> Bool
+prop_bangBangEquals_correct xs (i,y) = xs !!= (i,y) !! i == y 
 
 
 -- * E3
 
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
-update = undefined
+update (Sudoku s) (r,c) y = Sudoku (s !!= (r,
+                            ((s !! r) !!= (c,y))))
 
---prop_update_updated :: ...
---prop_update_updated =
+-- QuickCheck tries to evaluate with arguments that throw errors
+prop_update_updated :: Sudoku -> Pos -> Maybe Int -> Bool
+prop_update_updated s (r,c) y = xs !! r !! c == y
+        where (Sudoku xs) = update s (r,c) y
 
 
 -- * E4
 
 candidates :: Sudoku -> Pos -> [Int]
-candidates = undefined
+candidates s p = undefined
 
 --prop_candidates_correct :: ...
 --prop_candidates_correct =
