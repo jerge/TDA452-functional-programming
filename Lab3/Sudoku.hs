@@ -183,7 +183,10 @@ xs !!= (i,y) | length(xs) == 0
     
 -- QuickCheck tries to evaluate with arguments that throw errors
 prop_bangBangEquals_correct :: Eq a => [a] -> (Int, a) -> Bool
-prop_bangBangEquals_correct xs (i,y) = xs !!= (i,y) !! i == y 
+prop_bangBangEquals_correct xs (i,y)  | length(xs) <= i
+                                      ||        xs == []
+                                      ||         i <  0 = True
+                                      | otherwise       = xs !!= (i,y) !! i == y 
 
 
 -- * E3
@@ -194,24 +197,40 @@ update (Sudoku s) (r,c) y = Sudoku (s !!= (r,
 
 -- QuickCheck tries to evaluate with arguments that throw errors
 prop_update_updated :: Sudoku -> Pos -> Maybe Int -> Bool
-prop_update_updated s (r,c) y = xs !! r !! c == y
+prop_update_updated s (r,c) y | r < 0 || c < 0 
+                             || r > 8 || c > 8  = True
+                              | otherwise       = xs !! r !! c == y
         where (Sudoku xs) = update s (r,c) y
 
 
 -- * E4
 
-candidates :: Sudoku -> Pos -> [Int]
-candidates s p = undefined
+candidates :: Sudoku -> Pos -> [Maybe Int]
+candidates s p = filter (cand s p) (map Just [1..9])
 
---prop_candidates_correct :: ...
---prop_candidates_correct =
+cand :: Sudoku -> Pos -> Maybe Int -> Bool
+cand s p n | isOkay(update s p n) = True
+           | otherwise = False
+
+prop_candidates_correct :: Sudoku -> Pos -> Bool
+prop_candidates_correct s (r,c) | r < 0 || c < 0
+                               || r > 8 || c > 8 = True
+                                | otherwise = and (map isOkay (map (update s (r,c)) (candidates s (r,c))))
 
 
 ------------------------------------------------------------------------------
 
 -- * F1
+solve :: Sudoku -> Maybe Sudoku
+solve s | isSudoku s || not (isOkay s) = Nothing
+        | otherwise                    = solve' s
 
+solve' :: Sudoku -> Maybe Sudoku
+solve' s | blanks(s) == [] = Nothing
+         | otherwise = (map (solvePos s) (blanks s))
 
+solvePos :: Sudoku -> Pos -> Sudoku
+solvePos s p = map solve' (map (update s p) (candidates s p))
 -- * F2
 
 
