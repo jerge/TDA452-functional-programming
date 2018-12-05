@@ -193,8 +193,7 @@ prop_bangBangEquals_correct xs (i,y)  | length xs <= i
 -- * E3
 
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
-update (Sudoku s) (r,c) y = Sudoku (s !!= r,
-                            (s !! r) !!= (c,y))
+update (Sudoku s) (r,c) y = Sudoku (s !!= (r,(s !! r) !!= (c,y)))
 
 -- QuickCheck tries to evaluate with arguments that throw errors
 prop_update_updated :: Sudoku -> Pos -> Maybe Int -> Bool
@@ -205,9 +204,9 @@ prop_update_updated s (r,c) y | r < 0 || c < 0
 
 
 -- * E4
-
-candidates :: Sudoku -> Pos -> [Maybe Int]
-candidates s p = filter (cand s p) (map Just [1..9])
+{-
+candidates :: Sudoku -> Pos -> [Int]
+candidates s p = filter (cand s p) ([1..9])
 
 cand :: Sudoku -> Pos -> Maybe Int -> Bool
 cand s p n | isOkay(update s p n) = True
@@ -216,11 +215,11 @@ cand s p n | isOkay(update s p n) = True
 prop_candidates_correct :: Sudoku -> Pos -> Bool
 prop_candidates_correct s (r,c) | r < 0 || c < 0
                                || r > 8 || c > 8 = True
-                                | otherwise = all isOkay (map (update s (r,c)) (candidates s (r,c)))
+                                | otherwise = all isOkay (map (update s (r,c)) (map Just (candidates s (r,c))))
 
-
+-}
 ------------------------------------------------------------------------------
-
+{-
 -- * F1
 solve :: Sudoku -> Maybe Sudoku
 solve s | isSudoku s || not (isOkay s) = Nothing
@@ -231,7 +230,7 @@ solve' s | null blanks s = Nothing
          | otherwise = map (solvePos s) (blanks s)
 
 solvePos :: Sudoku -> Pos -> Sudoku
-solvePos s p = map solve' (map (update s p) (candidates s p))
+solvePos s p = map solve' (map (update s p) (candidates s p))-}
 -- * F2
 
 
