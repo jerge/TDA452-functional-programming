@@ -160,7 +160,8 @@ blanks' (x:xs) (r,c) = blankInRow x (r,c) ++ blanks' xs (r+1,c)
 
 blankInRow :: [Maybe Int] -> Pos -> [Pos]
 blankInRow [] _ = []
-blankInRow (x:xs) (r,c) = if x == Nothing then (r,c) : rest else rest
+blankInRow (x:xs) (r,c) | isNothing x = (r,c) : rest
+                        | otherwise = rest
           where rest = blankInRow xs (r,c+1)
 
 prop_blanks_allBlanks  :: Sudoku -> Bool
@@ -169,14 +170,14 @@ prop_blanks_allBlanks s = correctBlanks s (blanks s)
 correctBlanks :: Sudoku -> [Pos] -> Bool
 correctBlanks s [] = True
 correctBlanks (Sudoku s) ((r,c):ps) =  
-      (s !! r) !! c == Nothing && correctBlanks (Sudoku s) ps
+      isNothing ((s !! r) !! c) && correctBlanks (Sudoku s) ps
 
 
 -- * E2
 
 (!!=) :: [a] -> (Int,a) -> [a]
-xs !!= (i,y) | length(xs) == 0
-            || length(xs) <= i 
+xs !!= (i,y) | null xs
+            || length xs <= i 
             || i < 0           = error "Index out of bounds"
              | otherwise       = l++(y:rs)
     where (l,r:rs) = splitAt i xs
@@ -200,8 +201,12 @@ prop_update_updated s (r,c) y = xs !! r !! c == y
 
 -- * E4
 
-candidates :: Sudoku -> Pos -> [Int]
-candidates s p = undefined
+--candidates :: Sudoku -> Pos -> [Int]
+candidates s p = filter isOkay [update s p (Just n) | n <- [1..9]]
+
+candidates' :: Sudoku -> Pos -> Int -> Int
+candidates' s p n | isOkay (update s p (Just n)) = n
+                  | otherwise = Null
 
 --prop_candidates_correct :: ...
 --prop_candidates_correct =
