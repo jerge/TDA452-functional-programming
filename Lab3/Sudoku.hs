@@ -184,8 +184,8 @@ xs !!= (i,y) | null xs
     
 -- QuickCheck tries to evaluate with arguments that throw errors
 prop_bangBangEquals_correct :: Eq a => [a] -> (Int, a) -> Bool
-prop_bangBangEquals_correct xs (i,y)  | length(xs) <= i
-                                      ||        xs == []
+prop_bangBangEquals_correct xs (i,y)  | length xs <= i
+                                      ||        null xs
                                       ||         i <  0 = True
                                       | otherwise       = xs !!= (i,y) !! i == y 
 
@@ -193,8 +193,8 @@ prop_bangBangEquals_correct xs (i,y)  | length(xs) <= i
 -- * E3
 
 update :: Sudoku -> Pos -> Maybe Int -> Sudoku
-update (Sudoku s) (r,c) y = Sudoku (s !!= (r,
-                            ((s !! r) !!= (c,y))))
+update (Sudoku s) (r,c) y = Sudoku (s !!= r,
+                            (s !! r) !!= (c,y))
 
 -- QuickCheck tries to evaluate with arguments that throw errors
 prop_update_updated :: Sudoku -> Pos -> Maybe Int -> Bool
@@ -216,7 +216,7 @@ cand s p n | isOkay(update s p n) = True
 prop_candidates_correct :: Sudoku -> Pos -> Bool
 prop_candidates_correct s (r,c) | r < 0 || c < 0
                                || r > 8 || c > 8 = True
-                                | otherwise = and (map isOkay (map (update s (r,c)) (candidates s (r,c))))
+                                | otherwise = all isOkay (map (update s (r,c)) (candidates s (r,c)))
 
 
 ------------------------------------------------------------------------------
@@ -227,8 +227,8 @@ solve s | isSudoku s || not (isOkay s) = Nothing
         | otherwise                    = solve' s
 
 solve' :: Sudoku -> Maybe Sudoku
-solve' s | blanks(s) == [] = Nothing
-         | otherwise = (map (solvePos s) (blanks s))
+solve' s | null blanks s = Nothing
+         | otherwise = map (solvePos s) (blanks s)
 
 solvePos :: Sudoku -> Pos -> Sudoku
 solvePos s p = map solve' (map (update s p) (candidates s p))
