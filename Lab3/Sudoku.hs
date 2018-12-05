@@ -204,20 +204,22 @@ prop_update_updated s (r,c) y | r < 0 || c < 0
 
 
 -- * E4
-{-
-candidates :: Sudoku -> Pos -> [Int]
-candidates s p = filter (cand s p) ([1..9])
 
-cand :: Sudoku -> Pos -> Maybe Int -> Bool
-cand s p n | isOkay(update s p n) = True
+candidates :: Sudoku -> Pos -> [Int]
+candidates s p = filter (cand s p) [1..9]
+
+cand :: Sudoku -> Pos -> Int -> Bool
+cand s p n | isOkay (update s p (Just n)) = True
            | otherwise = False
 
-prop_candidates_correct :: Sudoku -> Pos -> Bool
-prop_candidates_correct s (r,c) | r < 0 || c < 0
-                               || r > 8 || c > 8 = True
-                                | otherwise = all isOkay (map (update s (r,c)) (map Just (candidates s (r,c))))
+validPos :: Pos -> Bool
+validPos (r, c) = r >= 0 && c >= 0 && r <= 8 && c <= 8
 
--}
+
+prop_candidates_correct :: Sudoku -> Pos -> Property
+prop_candidates_correct s p = validPos p ==> all isOkay (map (update s p . Just) (candidates s p))
+
+
 ------------------------------------------------------------------------------
 {-
 -- * F1
