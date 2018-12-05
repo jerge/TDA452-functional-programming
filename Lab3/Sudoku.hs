@@ -1,7 +1,7 @@
 module Sudoku where
 
 import Test.QuickCheck
-import Data.Maybe (isNothing)
+import Data.Maybe (isNothing, listToMaybe, catMaybes, fromJust)
 import Data.Char
 import Data.List
 
@@ -38,14 +38,11 @@ allBlankSudoku = Sudoku {rows = replicate 9 (replicate 9 Nothing) }
 -- puzzle
 
 isSudoku :: Sudoku -> Bool
-isSudoku (Sudoku cs) | length cs == 9 = isSudokuRow (Sudoku cs)
-                     | otherwise = False
+isSudoku (Sudoku cs) = length cs == 9 && all isSudokuRow cs
 
-
-isSudokuRow :: Sudoku -> Bool
-isSudokuRow (Sudoku [])                     = True
-isSudokuRow (Sudoku (r:rs)) | length r == 9 = isSudokuRow (Sudoku rs)
-                            | otherwise     = False
+isSudokuRow :: [Maybe Int] -> Bool
+isSudokuRow r = length r == 9
+                            
 
 -- * A3
 
@@ -65,9 +62,10 @@ isFilledRow (r:rs) | isNothing r  = False
 -- | printSudoku sud prints a nice representation of the sudoku sud on
 -- the screen
 printSudoku :: Sudoku -> IO ()
-printSudoku (Sudoku (r:rs)) | rs /= [] = do putStrLn ((map $ maybe '.' intToDigit) r)
-                                            printSudoku (Sudoku rs)
-                            | otherwise = putStrLn ((map $ maybe '.' intToDigit) r)
+printSudoku (Sudoku (r:rs)) | rs /= [] 
+                            = do putStrLn ((map $ maybe '.' intToDigit) r)
+                                 printSudoku (Sudoku rs)
+                   | otherwise = putStrLn ((map $ maybe '.' intToDigit) r)
 
 -- * B2
 
@@ -122,7 +120,8 @@ blocks s = rows s  ++ transpose (rows s) ++ squareBlocks (rows s)
 
 squareBlocks :: [Block] -> [Block]
 squareBlocks [] = []
-squareBlocks s = squareBlock (transpose (take 3 s)) ++ squareBlocks (drop 3 s)
+squareBlocks s  = squareBlock (transpose (take 3 s)) 
+               ++ squareBlocks (drop 3 s)
 
 squareBlock :: [Block] -> [Block]
 squareBlock [] = []
@@ -146,7 +145,7 @@ isOkay s = all isOkayBlock (blocks s)
 
 
 -- | Positions are pairs (row,column),
--- (0,0) is top left corner, (8,8) is bottom left corner
+-- (0,0) is top left corner, (8,8) is bottom RIGHT corner
 type Pos = (Int,Int)
 
 -- * E1
@@ -182,12 +181,12 @@ xs !!= (i,y) | null xs
              | otherwise       = l++(y:rs)
     where (l,r:rs) = splitAt i xs
     
+validIndex :: [a] -> Int -> Bool
+validIndex xs i = length xs <= i || null xs || i <  0
 -- QuickCheck tries to evaluate with arguments that throw errors
-prop_bangBangEquals_correct :: Eq a => [a] -> (Int, a) -> Bool
-prop_bangBangEquals_correct xs (i,y)  | length xs <= i
-                                      ||        null xs
-                                      ||         i <  0 = True
-                                      | otherwise       = xs !!= (i,y) !! i == y 
+prop_bangBangEquals_correct :: Integral a => [a] -> (Int, a) -> Property
+prop_bangBangEquals_correct xs (i,y) = not (validIndex xs i) ==>
+                                       xs !!= (i,y) !! i == y 
 
 
 -- * E3
@@ -196,10 +195,8 @@ update :: Sudoku -> Pos -> Maybe Int -> Sudoku
 update (Sudoku s) (r,c) y = Sudoku (s !!= (r,(s !! r) !!= (c,y)))
 
 -- QuickCheck tries to evaluate with arguments that throw errors
-prop_update_updated :: Sudoku -> Pos -> Maybe Int -> Bool
-prop_update_updated s (r,c) y | r < 0 || c < 0 
-                             || r > 8 || c > 8  = True
-                              | otherwise       = xs !! r !! c == y
+prop_update_updated :: Sudoku -> Pos -> Maybe Int -> Property
+prop_update_updated s (r,c) y = validPos (r,c) ==> xs !! r !! c == y
         where (Sudoku xs) = update s (r,c) y
 
 
@@ -217,26 +214,48 @@ validPos (r, c) = r >= 0 && c >= 0 && r <= 8 && c <= 8
 
 
 prop_candidates_correct :: Sudoku -> Pos -> Property
-prop_candidates_correct s p = validPos p ==> all isOkay (map (update s p . Just) (candidates s p))
+prop_candidates_correct s p = validPos p ==> 
+                        all isOkay (map (update s p . Just) (candidates s p))
 
 
 ------------------------------------------------------------------------------
-{-
+
 -- * F1
 solve :: Sudoku -> Maybe Sudoku
-solve s | isSudoku s || not (isOkay s) = Nothing
-        | otherwise                    = solve' s
+solve s | isSudoku s && isOkay s = solve' s (blanks s)
+        | otherwise              = Nothing
 
-solve' :: Sudoku -> Maybe Sudoku
-solve' s | null blanks s = Nothing
-         | otherwise = map (solvePos s) (blanks s)
+solve' :: Sudoku -> [Pos] -> Maybe Sudoku
+solve' s []     = Just s
+solve' s (p:ps) = listToMaybe(catMaybes ns)
+       where ns = [solve' (update s p (Just c)) ps | c <- candidates s p]
 
-solvePos :: Sudoku -> Pos -> Sudoku
-solvePos s p = map solve' (map (update s p) (candidates s p))-}
 -- * F2
-
+readAndSolve :: FilePath -> IO ()
+readAndSolve f = do s <- readSudoku f
+                    let sud = solve s
+                    if isNothing sud
+                      then error "Unsolvable sudoku"
+                    else printSudoku (fromJust sud)
 
 -- * F3
 
+isFinished :: Sudoku -> Bool
+isFinished s = isOkay s && isSudoku s && null (blanks s)
+
+isSameJust :: (Maybe Int, Maybe Int) -> Bool
+isSameJust (_,Nothing) = True
+isSameJust (sol,s)     = sol == s
+
+isSolutionOf :: Sudoku -> Sudoku -> Bool
+isSolutionOf sol s = isFinished sol && (and (map isSameJust z))
+                      where z = zip (concat (rows sol))
+                                    (concat (rows s))
 
 -- * F4
+-- It caches, so no problem that we call solve s twice
+isSolvable :: Sudoku -> Bool
+isSolvable s = isOkay s && isSudoku s && solve s /= Nothing
+
+prop_SolveSound :: Sudoku -> Property
+prop_SolveSound s = isSolvable s ==> isSolutionOf (fromJust (solve s)) s
