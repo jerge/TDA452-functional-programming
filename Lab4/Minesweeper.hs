@@ -9,7 +9,7 @@ data Tile = Unknown | Flag | Num Int | Mine | Empty
 
 -- The Idea is to have two minefields, one which represents the actual state (Mines or empties)
 -- and one to represent what the user knows (Unknown, Flag, Num Int, Mine or Empties)
-data Minefield = Minefield { rows :: [[Tile]]}
+newtype Minefield = Minefield { rows :: [[Tile]]}
     deriving (Eq, Show)
 
 instance Arbitrary Tile where
@@ -29,6 +29,7 @@ makeMinefield :: Int -> Int -> Int -> StdGen -> Minefield
 makeMinefield w h m r = 
 -}
 
+-- 7*14
 exampleMinefield :: Minefield
 exampleMinefield = 
     Minefield [
@@ -68,39 +69,41 @@ type Pos = (Int, Int)
 
 getTileAtPos :: Minefield -> Pos -> Tile
 getTileAtPos (Minefield m) (r,c) = (m !! r) !! c
-
+{- -- Returns an array of all empty positions
 empties :: Minefield -> [Pos]
 empties (Minefield rows) =
     [ (rowNum, colNum) | (rowNum, row) <- zip [0..] rows, 
                         (colNum, cell) <- zip [0..] row
                         , isEmpty cell ]
-
+-}
+-- Updates the value of an index in a list
 (!!=) :: [a] -> (Int,a) -> [a]
 xs !!= (i,y) | null xs
             || length xs <= i 
             || i < 0     = error "Index out of bounds"
              | otherwise = l++(y:rs)
     where (l,r:rs) = splitAt i xs
--- Work here \/
-calcAllNeighbourCount :: Minefield -> Minefield
-calcAllNeighbourCount (Minefield m) = map (cal m) (empties m)
 
-cal :: Minefield -> Pos -> Minefield
-cal m p = update m p (calcNeighbourCount m width height p)
-    where width = length (m !! 0)
-          height = length m
--- work here /\
+-- Updates at the specified location how many neighbouring mines there are
+updateNumberAtPos :: Minefield -> Pos -> Minefield
+updateNumberAtPos m p = update m p (calcNeighbourCount m width height p)
+    where width = length ((rows m) !! 0)
+          height = length (rows m)
+
+-- Update a minefield at a position with a specified tile
 update :: Minefield -> Pos -> Tile -> Minefield
 update (Minefield m) (r,c) y = Minefield (m !!= (r,(m !! r) !!= (c,y)))
 
+-- Calculates how many mines there are neighbouring the specified position
 calcNeighbourCount :: Minefield -> Int -> Int -> Pos -> Tile
 calcNeighbourCount m w h p | n == 0 = Empty
                            | otherwise = Num n
-    where n = length (filter isMine (map (getTileAtPos m) (neighbourPos p w h)))
+    where n = length (filter isMine (map (getTileAtPos m) (neighbourPos w h p)))
 
 -- Temporary function to return all 8 neighbouring positions
 allNeighbourPos :: [Pos]
 allNeighbourPos = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,0), (0,1), (1,-1), (1,0), (1,1)]
 
+-- Returns all valid neighbouring positions of a position
 neighbourPos :: Int -> Int -> Pos -> [Pos]
 neighbourPos w h p = filter (validPos w h) (map changeCoord (zip (replicate 8 p) allNeighbourPos))
