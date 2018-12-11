@@ -1,6 +1,7 @@
 module IO where
 
 import Minesweeper
+import Utils
 
 import Data.Char
 
