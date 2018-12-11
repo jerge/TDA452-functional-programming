@@ -14,8 +14,7 @@ newtype Minefield = Minefield { rows :: [[Tile]]}
 instance Arbitrary Tile where
     arbitrary =
         do n <- choose(1, 8)
-           tile <- elements [Unknown, Empty, (Num n), Mine, Flag]
-           return tile
+           elements [Unknown, Empty, Num n, Mine, Flag]
 {-
 instance Arbitrary Minefield where
     arbitrary =
