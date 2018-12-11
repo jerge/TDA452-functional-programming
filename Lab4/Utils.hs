@@ -31,7 +31,7 @@ xs !!= (i,y) | null xs
 -- Updates at the specified location how many neighbouring mines there are
 updateNumberAtPos :: Minefield -> Pos -> Minefield
 updateNumberAtPos m p = update m p (calcNeighbourCount m width height p)
-    where width = length ((rows m) !! 0)
+    where width = length (head (rows m))
           height = length (rows m)
 
 -- Update a minefield at a position with a specified tile
@@ -50,4 +50,4 @@ allNeighbourPos = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,0), (0,1), (1,-1), (1,0),
 
 -- Returns all valid neighbouring positions of a position
 neighbourPos :: Int -> Int -> Pos -> [Pos]
-neighbourPos w h p = filter (validPos w h) (map changeCoord (zip (replicate 8 p) allNeighbourPos))
+neighbourPos w h p = filter (validPos w h) (zipWith (curry changeCoord) (replicate 8 p) allNeighbourPos)
