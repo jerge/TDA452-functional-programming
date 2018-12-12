@@ -16,7 +16,7 @@ instance Arbitrary Tile where
         do n <- choose(1, 8)
            elements [Unknown, Empty, Num n, Mine, Flag]
 
-cell :: Int -> Int -> Gen (Tile)
+cell :: Int -> Int -> Gen Tile
 cell mines tiles = frequency [(mines, return Mine),
                               (tiles, return Empty)]
 
@@ -44,6 +44,9 @@ exampleMinefield =
         m = Mine
         e = Empty
 
+fillWithAllUnknowns :: Minefield
+fillWithAllUnknowns = Minefield [[Unknown | x <- [1..14]] | x <- [1..7]]
+
 isMinefield :: Minefield -> Bool
 isMinefield (Minefield (m:ms)) = all (isMinefield' (length m)) ms
 
@@ -58,7 +61,8 @@ isEmpty :: Tile -> Bool
 isEmpty Empty = True
 isEmpty _ = False
 
-type Pos = (Int, Int)
+isUnknown :: Tile -> Bool
+isUnknown Unknown = True
+isUnknown _      = False
 
-revealTile :: Minefield -> Minefield -> Pos -> (Minefield, Minefield)
-revealTile userMinefield minefield (x,y) = update 
+type Pos = (Int, Int)
