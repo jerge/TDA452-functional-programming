@@ -49,13 +49,16 @@ allNeighbourPos = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
 neighbourPos :: Pos -> Pos -> [Pos]
 neighbourPos (h,w) p = filter (validPos (h,w)) (zipWith (curry addPos) (replicate 8 p) allNeighbourPos)
 
+revealTile :: Minefield -> Minefield -> Pos -> (Minefield, Minefield)
+revealTile userMinefield minefield p | getTileAtPos minefield p == Empty = (updateNumberAtPos userMinefield p, minefield)
+                                     | otherwise                         = error "You lost"
 
 ---------------------- Unused ------------------------
 
-{- -- Returns an array of all empty positions
-empties :: Minefield -> [Pos]
-empties (Minefield rows) =
+-- Returns an array of all unknown positions
+unknowns :: Minefield -> [Pos]
+unknowns (Minefield rows) =
     [ (rowNum, colNum) | (rowNum, row) <- zip [0..] rows, 
                         (colNum, cell) <- zip [0..] row
-                        , isEmpty cell ]
--}
+                        , isUnknown cell ]
+
