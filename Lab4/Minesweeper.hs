@@ -15,17 +15,18 @@ instance Arbitrary Tile where
     arbitrary =
         do n <- choose(1, 8)
            elements [Unknown, Empty, Num n, Mine, Flag]
-{-
+
+cell :: Int -> Int -> Gen (Tile)
+cell mines tiles = frequency [(mines, return Mine),
+                              (tiles, return Empty)]
+
 instance Arbitrary Minefield where
     arbitrary =
         do height <- choose (1,20)  --Set height at atleast one row
            width <- choose (2,30)   --Set width so that there is atleast 2 cells and at most 20*30
            mines <- choose (1, width*height-1)
-           rand <- chooseAny
-
-makeMinefield :: Int -> Int -> Int -> StdGen -> Minefield
-makeMinefield w h m r = 
--}
+           mf <- vectorOf height (vectorOf width (cell mines (width*height)))
+           return (Minefield mf)
 
 -- 7*14
 exampleMinefield :: Minefield
