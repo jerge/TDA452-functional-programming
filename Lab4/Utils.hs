@@ -4,10 +4,12 @@ import Minesweeper
 
 import Data.Char
 
-
+-- Adds the elements of a tuple of tuples into new tuples
 addPos :: (Pos,Pos) -> Pos
 addPos ((x,y),(cx,cy)) = (x+cx,y+cy)
 
+-- Checks if a position is inside the height and width,
+-- as well as being larger than 0
 validPos :: Pos -> Pos -> Bool
 validPos (h,w) (r,c) = r >= 0 && c >= 0 && c < w && r < h
 
@@ -41,7 +43,7 @@ calcNeighbourCount m (h,w) p | n == 0 = Empty
 
 -- Temporary function to return all 8 neighbouring positions
 allNeighbourPos :: [Pos]
-allNeighbourPos = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,0), (0,1), (1,-1), (1,0), (1,1)]
+allNeighbourPos = [(-1,-1), (-1,0), (-1,1), (0,-1), (0,1), (1,-1), (1,0), (1,1)]
 
 -- Returns all valid neighbouring positions of a position
 neighbourPos :: Pos -> Pos -> [Pos]
