@@ -14,33 +14,37 @@ printRow ms = putStrLn (map tileToChar ms)
 tileToChar :: Tile -> Char
 tileToChar Unknown = '#'
 tileToChar Mine = 'm'
-tileToChar Empty = '0'
+tileToChar Empty = '■'
 tileToChar (Num 0) = '0'
 tileToChar (Num i) = intToDigit i
 tileToChar Flag = 'X'
 
+examplePlay :: IO ()
+examplePlay = play allUnknowns exampleMinefield
+
 play :: Minefield -> Minefield -> IO ()
-play userMinefield minefield = do print userMinefield
-                                  putStrLn "Enter a command ('f' to set flag, 's' to select or 'q' to quit"
-                                  char <- getChar
-                                  if char == 'q' then print "You suck"
-                                  else if char == 'f' then
-                                    do putStr "Enter row: "
-                                       r <- readLn
-                                       putStr "Enter col: "
-                                       c <- readLn
-                                       play (update userMinefield (r,c) Flag) minefield
-                                      
-                                  else if char == 's' then 
-                                    do putStr "Enter row: "
-                                       r <- readLn
-                                       putStr "Enter col: "
-                                       c <- readLn
-                                       let (sm1, sm2) = revealTile userMinefield minefield (r,c)
-                                       play sm1 sm2
+play userMinefield minefield = 
+   do printMinefield userMinefield
+      putStrLn "Enter a command ('f' to set flag, 's' to select or 'q' to quit"
+      char <- getChar
+      if char == 'q' then print "You suck"
+      else if char == 'f' then
+         do p <- askForPos
+            play (update userMinefield p Flag) minefield
 
-                                  else do print "Invalid input"
-                                          play userMinefield minefield
- 
-lkajsldjalkjd = "lol"
+      else if char == 's' then 
+         do p <- askForPos
+            let userM = revealTile userMinefield minefield p
+            play userM minefield
 
+      else 
+         do putStr "Invalid input"
+            play userMinefield minefield
+
+askForPos :: IO (Pos)
+askForPos = 
+   do putStr "\nEnter row: "
+      r <- readLn
+      putStr "Enter col: "
+      c <- readLn
+      return (r,c)

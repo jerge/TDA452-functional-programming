@@ -32,11 +32,11 @@ instance Arbitrary Minefield where
 exampleMinefield :: Minefield
 exampleMinefield = 
     Minefield [
-        [e,e,e,e,m,e,e,m,m,e,e,e,m,e],
-        [e,m,e,e,e,e,m,e,e,e,e,e,m,e], 
-        [m,m,m,e,e,e,e,e,e,e,m,m,e,e], 
-        [m,m,e,e,e,m,e,m,m,e,m,e,m,e], 
-        [m,e,m,e,m,e,e,m,m,m,e,e,e,e], 
+        [e,e,m,e,e,e,m,m,m,e,e,e,m,e],
+        [e,e,m,e,e,e,m,e,e,e,e,e,m,e], 
+        [e,e,e,e,e,e,e,e,e,e,m,m,e,e], 
+        [e,e,e,e,e,e,e,m,m,e,m,e,m,e], 
+        [e,e,e,e,e,e,e,m,m,m,e,e,e,e], 
         [e,e,e,m,e,m,e,e,m,e,m,m,e,e], 
         [e,e,m,e,e,e,e,e,m,e,e,e,e,e] 
     ]
@@ -44,8 +44,11 @@ exampleMinefield =
         m = Mine
         e = Empty
 
-fillWithAllUnknowns :: Minefield
-fillWithAllUnknowns = Minefield [[Unknown | x <- [1..14]] | x <- [1..7]]
+allUnknowns :: Minefield
+allUnknowns = Minefield [[Unknown | x <- [1..14]] | x <- [1..7]]
+
+allEmpties :: Minefield
+allEmpties = Minefield [[Empty | x <- [1..14]] | x <- [1..7]]
 
 isMinefield :: Minefield -> Bool
 isMinefield (Minefield (m:ms)) = all (isMinefield' (length m)) ms
@@ -64,5 +67,9 @@ isEmpty _ = False
 isUnknown :: Tile -> Bool
 isUnknown Unknown = True
 isUnknown _      = False
+
+isNum :: Tile -> Bool
+isNum (Num _) = True
+isNum _ = False
 
 type Pos = (Int, Int)
