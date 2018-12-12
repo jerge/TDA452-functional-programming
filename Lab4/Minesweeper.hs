@@ -59,3 +59,6 @@ isEmpty Empty = True
 isEmpty _ = False
 
 type Pos = (Int, Int)
+
+revealTile :: Minefield -> Minefield -> Pos -> (Minefield, Minefield)
+revealTile userMinefield minefield (x,y) = update 
