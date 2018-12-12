@@ -28,7 +28,7 @@ instance Arbitrary Minefield where
            mf <- vectorOf height (vectorOf width (cell mines (width*height)))
            return (Minefield mf)
 
--- 7*14
+-- w 14 h 7
 exampleMinefield :: Minefield
 exampleMinefield = 
     Minefield [
