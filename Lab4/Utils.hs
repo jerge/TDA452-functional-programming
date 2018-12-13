@@ -76,7 +76,7 @@ revealEmpty um m p | isNum (getTileAtPos m p) = revealTile um m p
           re1 = revealTile re0 m (unknowns !! 1)
           re2 = revealTile re1 m (unknowns !! 2)
           re3 = revealTile re2 m (unknowns !! 3)
-
+{- Unecessary
 -- TODO plz fix
 allAdjacentPos :: Pos -> [Pos]
 allAdjacentPos (x, y) = [ (x + dx, y + dy) | dx <- [-1, 0, 1],
@@ -84,10 +84,10 @@ allAdjacentPos (x, y) = [ (x + dx, y + dy) | dx <- [-1, 0, 1],
                                           dx + dy == 1 ]
 adjacentPos :: Pos -> Pos -> [Pos]
 adjacentPos (h,w) p = filter (validPos (h,w)) (allNeighbourPos p)
-
+-}
 -- Hlint This
 adjacentUnknownZeros :: Minefield -> Minefield -> Pos -> [Pos]
-adjacentUnknownZeros um m p = filter (not . isMine . calcNeighbourCount m) (filter (isUnknown . (getTileAtPos um)) (adjacentPos (h,w) p))
+adjacentUnknownZeros um m p = filter (not . isMine . calcNeighbourCount m) (filter (isUnknown . (getTileAtPos um)) (neighbourPos (h,w) p))
     where h = length (rows m)
           w = length (head (rows m))
     
