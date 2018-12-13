@@ -35,11 +35,15 @@ play userMinefield minefield =
       else if char == 's' then 
          do p <- askForPos
             let userM = revealTile userMinefield minefield p
-            play userM minefield
-
+            if checkIfWon userMinefield minefield then print "Congrats, you won"
+            else play userM minefield
       else 
          do putStr "Invalid input"
             play userMinefield minefield
+
+checkIfWon :: Minefield -> Minefield-> Bool
+checkIfWon userMinefield minefield = 
+   (amountTile userMinefield Unknown) + (amountTile userMinefield Flag) == amountTile minefield Mine
 
 askForPos :: IO (Pos)
 askForPos = 

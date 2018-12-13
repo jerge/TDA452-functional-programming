@@ -73,9 +73,9 @@ revealEmpty um m p | isNum (getTileAtPos m p) = revealTile um m p
                    | otherwise = um
     where unknowns = (adjacentUnknownZeros um m p)
           re0 = revealTile (update um (unknowns !! 0) Empty) m (unknowns !! 0)
-          re1 = revealTile (re0) m (unknowns !! 1)
-          re2 = revealTile (re1) m (unknowns !! 2)
-          re3 = revealTile (re2) m (unknowns !! 3)
+          re1 = revealTile re0 m (unknowns !! 1)
+          re2 = revealTile re1 m (unknowns !! 2)
+          re3 = revealTile re2 m (unknowns !! 3)
 
 -- TODO plz fix
 allAdjacentPos :: Pos -> [Pos]

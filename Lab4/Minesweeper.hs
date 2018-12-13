@@ -24,7 +24,7 @@ instance Arbitrary Minefield where
     arbitrary =
         do height <- choose (1,20)  --Set height at atleast one row
            width <- choose (2,30)   --Set width so that there is atleast 2 cells and at most 20*30
-           mines <- choose (1, width*height-1)
+           mines <- choose (1, width*height-1) -- Probability to get mines
            mf <- vectorOf height (vectorOf width (cell mines (width*height)))
            return (Minefield mf)
 
@@ -49,6 +49,9 @@ allUnknowns = Minefield [[Unknown | x <- [1..14]] | x <- [1..7]]
 
 allEmpties :: Minefield
 allEmpties = Minefield [[Empty | x <- [1..14]] | x <- [1..7]]
+
+amountTile :: Minefield -> Tile -> Int
+amountTile (Minefield m) t = length $ filter (== t) (concat m)
 
 isMinefield :: Minefield -> Bool
 isMinefield (Minefield (m:ms)) = all (isMinefield' (length m)) ms
