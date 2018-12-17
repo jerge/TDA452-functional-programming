@@ -35,6 +35,7 @@ exampleGame = Game {userM = allUnknowns, logicM = exampleMinefield, hasWon = Fal
 
 play :: Game -> IO ()
 play Game {hasWon = True} = print "Congrats! You Won!"
+play Game {hasLost = True} = print "You lost"
 play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost} = 
    do printMinefield userMinefield
       putStrLn "Enter a command ('f' to set flag, 's' to select or 'q' to quit"
@@ -49,10 +50,16 @@ play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lo
                do c <- askForConfirmation
                   if 'y' /= c then play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
                   else 
-                     do let newGame = revealTile userMinefield minefield p
+                     do let newGame = revealTile Game {userM   = userMinefield,
+                                                       logicM  = minefield,
+                                                       hasWon  = won,
+                                                       hasLost = lost} p
                         play $ checkIfWon newGame
             else 
-               do let newGame = revealTile userMinefield minefield p
+               do let newGame = revealTile Game {userM   = userMinefield,
+                                                 logicM  = minefield,
+                                                 hasWon  = won,
+                                                 hasLost = lost} p
                   play $ checkIfWon newGame
       else 
          do putStr "Invalid input"

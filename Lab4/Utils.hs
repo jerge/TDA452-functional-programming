@@ -54,31 +54,37 @@ neighbourPos (h,w) p = filter (validPos (h,w)) (allNeighbourPos p)
 -- If it's an empty location it reveals it and calls revealEmpty
 -- If it's a number then it reveals it
 -- If it's a mine the player loses
-revealTile :: Minefield -> Minefield -> Pos -> Game
-revealTile userMinefield minefield p | calcNeighbourCount minefield p == Empty = revealEmpty newM minefield p 
-                                     | getTileAtPos minefield p /= Mine        = Game {userM = newM,
-                                                                                       logicM = minefield,
-                                                                                       hasWon = False,
-                                                                                       hasLost = False}
-                                     | otherwise                               = Game {hasLost = True}
-    where newM = updateNumberAtPos userMinefield minefield p
+revealTile :: Game -> Pos -> Game
+revealTile g p | calcNeighbourCount (logicM g) p == Empty = revealEmpty newGame p
+               | getTileAtPos (logicM g) p /= Mine        = newGame
+               | otherwise                                = Game {userM = userM g,
+                                                                  logicM = logicM g,
+                                                                  hasWon = hasWon g,
+                                                                  hasLost = True}
+                where newGame = Game {userM   = updateNumberAtPos (userM g) (logicM g) p,
+                                      logicM  = logicM g,
+                                      hasWon  = hasWon g,
+                                      hasLost = hasLost g}
 
 -- Returns a minefield with all neighbouring empty and number tiles,
 -- to the inputed empty position, revealed
 -- This can definitely be done smoother, 
 -- but I have already fiddled with it for an unreasonable amount of time
-revealEmpty :: Minefield -> Minefield-> Pos -> Game
-revealEmpty um m p | isNum (getTileAtPos m p) = revealTile um m p
-                   | length unknowns > 3 = re3
-                   | length unknowns > 2 = re2
-                   | length unknowns > 1 = re1
-                   | unknowns /= [] = re0
-                   | otherwise = Game {userM = um, logicM = m, hasWon = False, hasLost = False}
-    where unknowns = (adjacentUnknownZeros um m p)
-          re0 = revealTile (update um (head unknowns) Empty) m (head unknowns)
-          re1 = revealTile (userM re0) m (unknowns !! 1)
-          re2 = revealTile (userM re1) m (unknowns !! 2)
-          re3 = revealTile (userM re2) m (unknowns !! 3)
+revealEmpty :: Game -> Pos -> Game
+revealEmpty g p | isNum (getTileAtPos (logicM g) p) = revealTile g p
+                | length unknowns > 3 = re3
+                | length unknowns > 2 = re2
+                | length unknowns > 1 = re1
+                | unknowns /= [] = re0
+                | otherwise = Game {userM = userM g, logicM = logicM g, hasWon = False, hasLost = False}
+    where unknowns = adjacentUnknownZeros (userM g) (logicM g) p
+          re0 = revealTile Game {userM   = update (userM g) (head unknowns) Empty,
+                                 logicM  = logicM g,
+                                 hasWon  = hasWon g,
+                                 hasLost = hasLost g} (head unknowns)
+          re1 = revealTile re0 (unknowns !! 1)
+          re2 = revealTile re1 (unknowns !! 2)
+          re3 = revealTile re2 (unknowns !! 3)
 {- Unecessary
 -- TODO plz fix
 allAdjacentPos :: Pos -> [Pos]
