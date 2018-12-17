@@ -6,20 +6,26 @@ import Utils
 import Data.Char
 
 printMinefield :: Minefield -> IO ()
-printMinefield (Minefield ms) = do putStrLn $ concat $ map show [1..width]
-                                   mapM_ printRow ms
+printMinefield (Minefield ms) = do putStr "\n    0 "
+                                   putStrLn $ concat $ map showIndexCol [1..width-1]
+                                   mapM_ printRow (zip ms ([0..height-1]))
                               where width = length (head ms)
+                                    height = length ms
 
-printRow :: [Tile] -> IO ()
-printRow ms = putStrLn $ concat (map tileToChar ms)
+showIndexCol :: Int -> String
+showIndexCol i | i < 10 = ' ' : show i ++ " "
+               | otherwise = show i ++ " "
+
+printRow :: ([Tile],Int) -> IO ()
+printRow (ms,r) = putStrLn ((showIndexCol r) ++ concat (map tileToChar ms))
 
 tileToChar :: Tile -> String
-tileToChar Unknown = "# "
-tileToChar Mine = "m "
-tileToChar Empty = "■ "
-tileToChar (Num 0) = "0 "
-tileToChar (Num i) = intToDigit i : " "
-tileToChar Flag = "X "
+tileToChar Unknown   = "[#]"
+tileToChar Mine      = "[m]"
+tileToChar Empty     = " ■ "
+tileToChar (Num 0)   = "[0]"
+tileToChar (Num i)   = " " ++ intToDigit i : " "
+tileToChar Flag      = "[X]"
 
 examplePlay :: IO ()
 examplePlay = play exampleGame
