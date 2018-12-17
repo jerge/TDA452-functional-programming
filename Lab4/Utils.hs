@@ -87,7 +87,7 @@ adjacentPos (h,w) p = filter (validPos (h,w)) (allNeighbourPos p)
 -}
 -- Hlint This
 adjacentUnknownZeros :: Minefield -> Minefield -> Pos -> [Pos]
-adjacentUnknownZeros um m p = filter (not . isMine . calcNeighbourCount m) (filter (isUnknown . (getTileAtPos um)) (neighbourPos (h,w) p))
+adjacentUnknownZeros um m p = filter (not . isMine . calcNeighbourCount m) $ filter (isUnknown . (getTileAtPos um)) $ neighbourPos (h,w) p
     where h = length (rows m)
           w = length (head (rows m))
     

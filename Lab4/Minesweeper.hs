@@ -11,6 +11,9 @@ data Tile = Unknown | Flag | Num Int | Mine | Empty
 newtype Minefield = Minefield { rows :: [[Tile]]}
     deriving (Eq, Show)
 
+data Game = Game {userM :: Minefield, logicM :: Minefield, hasWon :: Bool, hasLost :: Bool}
+    deriving Show
+
 instance Arbitrary Tile where
     arbitrary =
         do n <- choose(1, 8)

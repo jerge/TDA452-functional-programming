@@ -6,40 +6,54 @@ import Utils
 import Data.Char
 
 printMinefield :: Minefield -> IO ()
-printMinefield (Minefield ms) = mapM_ printRow ms
+printMinefield (Minefield ms) = do putStrLn $ concat $ map show [1..width]
+                                   mapM_ printRow ms
+                              where width = length (head ms)
 
 printRow :: [Tile] -> IO ()
-printRow ms = putStrLn (map tileToChar ms)
+printRow ms = putStrLn $ concat (map tileToChar ms)
 
-tileToChar :: Tile -> Char
-tileToChar Unknown = '#'
-tileToChar Mine = 'm'
-tileToChar Empty = '■'
-tileToChar (Num 0) = '0'
-tileToChar (Num i) = intToDigit i
-tileToChar Flag = 'X'
+tileToChar :: Tile -> String
+tileToChar Unknown = "# "
+tileToChar Mine = "m "
+tileToChar Empty = "■ "
+tileToChar (Num 0) = "0 "
+tileToChar (Num i) = intToDigit i : " "
+tileToChar Flag = "X "
 
 examplePlay :: IO ()
-examplePlay = play allUnknowns exampleMinefield
+examplePlay = play exampleGame
 
-play :: Minefield -> Minefield -> IO ()
-play userMinefield minefield = 
+exampleGame :: Game
+exampleGame = Game {userM = allUnknowns, logicM = exampleMinefield, hasWon = False, hasLost = False}
+
+play :: Game -> IO ()
+play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost} = 
    do printMinefield userMinefield
       putStrLn "Enter a command ('f' to set flag, 's' to select or 'q' to quit"
       char <- getChar
-      if char == 'q' then print "You suck"
+      if char == 'q' then print "Bye Bye"
       else if char == 'f' then
          do p <- askForPos
-            play (update userMinefield p Flag) minefield
-
+            play Game {userM = (update userMinefield p Flag), logicM = minefield, hasWon = won, hasLost = lost}
       else if char == 's' then 
          do p <- askForPos
-            let userM = revealTile userMinefield minefield p
-            if checkIfWon userMinefield minefield then print "Congrats, you won"
-            else play userM minefield
+            if (getTileAtPos userMinefield p) == Flag then
+               do c <- askForConfirmation
+                  if 'y' /= c then play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
+                  else 
+                     do let um = revealTile userMinefield minefield p
+                        if checkIfWon userMinefield minefield then print "Congrats, you won"
+                        else play Game {userM = um, logicM = minefield, hasWon = won, hasLost = lost}
+            else 
+               do let userM = revealTile userMinefield minefield p
+                  if checkIfWon userMinefield minefield then print "Congrats, you won"
+                  else play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
       else 
          do putStr "Invalid input"
-            play userMinefield minefield
+            play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
+
+
 
 checkIfWon :: Minefield -> Minefield-> Bool
 checkIfWon userMinefield minefield = 
@@ -52,3 +66,8 @@ askForPos =
       putStr "Enter col: "
       c <- readLn
       return (r,c)
+
+askForConfirmation :: IO (Char)
+askForConfirmation = do putStrLn "Are you sure you want to reveal a flag? ('y'/'n')"
+                        char <- getChar
+                        return char
