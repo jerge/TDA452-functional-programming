@@ -15,7 +15,7 @@ genPos (h,w) = do r <- choose (0,h-1)
 -- Chooses an index within the range of the list and checks if
 -- the !!= operator really changes the value at the index
 prop_bangBangEquals :: Integral a => [a] -> a -> Property
-prop_bangBangEquals xs y = length xs > 0 ==> 
+prop_bangBangEquals xs y = not $ null xs ==> 
                         forAll (choose (0,length xs - 1)) 
                                (prop_bangBangEquals' xs y)
 

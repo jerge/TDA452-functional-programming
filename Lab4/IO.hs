@@ -7,8 +7,8 @@ import Data.Char
 
 printMinefield :: Minefield -> IO ()
 printMinefield (Minefield ms) = do putStr "\n    0 "
-                                   putStrLn $ concat $ map showIndexCol [1..width-1]
-                                   mapM_ printRow (zip ms ([0..height-1]))
+                                   putStrLn $ concatMap showIndexCol [1..width-1]
+                                   mapM_ printRow (zip ms [0..height-1])
                               where width = length (head ms)
                                     height = length ms
 
@@ -17,7 +17,7 @@ showIndexCol i | i < 10 = ' ' : show i ++ " "
                | otherwise = show i ++ " "
 
 printRow :: ([Tile],Int) -> IO ()
-printRow (ms,r) = putStrLn ((showIndexCol r) ++ concat (map tileToChar ms))
+printRow (ms,r) = putStrLn (showIndexCol r ++ concatMap tileToChar ms)
 
 tileToChar :: Tile -> String
 tileToChar Unknown   = "[#]"
@@ -43,10 +43,10 @@ play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lo
       if char == 'q' then print "Bye Bye"
       else if char == 'f' then
          do p <- askForPos
-            play Game {userM = (update userMinefield p Flag), logicM = minefield, hasWon = won, hasLost = lost}
+            play Game {userM = update userMinefield p Flag, logicM = minefield, hasWon = won, hasLost = lost}
       else if char == 's' then 
          do p <- askForPos
-            if (getTileAtPos userMinefield p) == Flag then
+            if getTileAtPos userMinefield p == Flag then
                do c <- askForConfirmation
                   if 'y' /= c then play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
                   else 
@@ -68,15 +68,15 @@ play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lo
 
 
 checkIfWon :: Game -> Game
-checkIfWon g = Game {userM = (userM g),
-                     logicM = (logicM g),
-                     hasWon = (amountTile (userM g) Unknown)
-                              + (amountTile (userM g) Flag)
+checkIfWon g = Game {userM = userM g,
+                     logicM = logicM g,
+                     hasWon = amountTile (userM g) Unknown
+                              + amountTile (userM g) Flag
                               == amountTile (logicM g) Mine,
-                     hasLost = (hasLost g)}
+                     hasLost = hasLost g}
 
 
-askForPos :: IO (Pos)
+askForPos :: IO Pos
 askForPos = 
    do putStr "\nEnter row: "
       r <- readLn
@@ -84,7 +84,6 @@ askForPos =
       c <- readLn
       return (r,c)
 
-askForConfirmation :: IO (Char)
+askForConfirmation :: IO Char
 askForConfirmation = do putStrLn "Are you sure you want to reveal a flag? ('y'/'n')"
-                        char <- getChar
-                        return char
+                        getChar
