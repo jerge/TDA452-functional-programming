@@ -54,28 +54,31 @@ neighbourPos (h,w) p = filter (validPos (h,w)) (allNeighbourPos p)
 -- If it's an empty location it reveals it and calls revealEmpty
 -- If it's a number then it reveals it
 -- If it's a mine the player loses
-revealTile :: Minefield -> Minefield -> Pos -> Minefield
+revealTile :: Minefield -> Minefield -> Pos -> Game
 revealTile userMinefield minefield p | calcNeighbourCount minefield p == Empty = revealEmpty newM minefield p 
-                                     | getTileAtPos minefield p /= Mine        = newM
-                                     | otherwise                               = error "You lost"
+                                     | getTileAtPos minefield p /= Mine        = Game {userM = newM,
+                                                                                       logicM = minefield,
+                                                                                       hasWon = False,
+                                                                                       hasLost = False}
+                                     | otherwise                               = Game {hasLost = True}
     where newM = updateNumberAtPos userMinefield minefield p
 
 -- Returns a minefield with all neighbouring empty and number tiles,
 -- to the inputed empty position, revealed
 -- This can definitely be done smoother, 
 -- but I have already fiddled with it for an unreasonable amount of time
-revealEmpty :: Minefield -> Minefield-> Pos -> Minefield
+revealEmpty :: Minefield -> Minefield-> Pos -> Game
 revealEmpty um m p | isNum (getTileAtPos m p) = revealTile um m p
                    | length unknowns > 3 = re3
                    | length unknowns > 2 = re2
                    | length unknowns > 1 = re1
                    | unknowns /= [] = re0
-                   | otherwise = um
+                   | otherwise = Game {userM = um, logicM = m, hasWon = False, hasLost = False}
     where unknowns = (adjacentUnknownZeros um m p)
-          re0 = revealTile (update um (unknowns !! 0) Empty) m (unknowns !! 0)
-          re1 = revealTile re0 m (unknowns !! 1)
-          re2 = revealTile re1 m (unknowns !! 2)
-          re3 = revealTile re2 m (unknowns !! 3)
+          re0 = revealTile (update um (head unknowns) Empty) m (head unknowns)
+          re1 = revealTile (userM re0) m (unknowns !! 1)
+          re2 = revealTile (userM re1) m (unknowns !! 2)
+          re3 = revealTile (userM re2) m (unknowns !! 3)
 {- Unecessary
 -- TODO plz fix
 allAdjacentPos :: Pos -> [Pos]
@@ -87,7 +90,7 @@ adjacentPos (h,w) p = filter (validPos (h,w)) (allNeighbourPos p)
 -}
 -- Hlint This
 adjacentUnknownZeros :: Minefield -> Minefield -> Pos -> [Pos]
-adjacentUnknownZeros um m p = filter (not . isMine . calcNeighbourCount m) $ filter (isUnknown . (getTileAtPos um)) $ neighbourPos (h,w) p
+adjacentUnknownZeros um m p = filter (not . isMine . calcNeighbourCount m) $ filter (isUnknown . getTileAtPos um) $ neighbourPos (h,w) p
     where h = length (rows m)
           w = length (head (rows m))
     

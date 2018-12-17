@@ -28,6 +28,7 @@ exampleGame :: Game
 exampleGame = Game {userM = allUnknowns, logicM = exampleMinefield, hasWon = False, hasLost = False}
 
 play :: Game -> IO ()
+play Game {hasWon = True} = print "Congrats! You Won!"
 play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost} = 
    do printMinefield userMinefield
       putStrLn "Enter a command ('f' to set flag, 's' to select or 'q' to quit"
@@ -42,22 +43,25 @@ play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lo
                do c <- askForConfirmation
                   if 'y' /= c then play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
                   else 
-                     do let um = revealTile userMinefield minefield p
-                        if checkIfWon userMinefield minefield then print "Congrats, you won"
-                        else play Game {userM = um, logicM = minefield, hasWon = won, hasLost = lost}
+                     do let newGame = revealTile userMinefield minefield p
+                        play $ checkIfWon newGame
             else 
-               do let userM = revealTile userMinefield minefield p
-                  if checkIfWon userMinefield minefield then print "Congrats, you won"
-                  else play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
+               do let newGame = revealTile userMinefield minefield p
+                  play $ checkIfWon newGame
       else 
          do putStr "Invalid input"
             play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
 
 
 
-checkIfWon :: Minefield -> Minefield-> Bool
-checkIfWon userMinefield minefield = 
-   (amountTile userMinefield Unknown) + (amountTile userMinefield Flag) == amountTile minefield Mine
+checkIfWon :: Game -> Game
+checkIfWon g = Game {userM = (userM g),
+                     logicM = (logicM g),
+                     hasWon = (amountTile (userM g) Unknown)
+                              + (amountTile (userM g) Flag)
+                              == amountTile (logicM g) Mine,
+                     hasLost = (hasLost g)}
+
 
 askForPos :: IO (Pos)
 askForPos = 
