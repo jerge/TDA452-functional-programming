@@ -6,20 +6,26 @@ import Utils
 import Data.Char
 
 printMinefield :: Minefield -> IO ()
-printMinefield (Minefield ms) = do putStrLn $ concat $ map show [1..width]
-                                   mapM_ printRow ms
+printMinefield (Minefield ms) = do putStr "\n    0 "
+                                   putStrLn $ concat $ map showIndexCol [1..width-1]
+                                   mapM_ printRow (zip ms ([0..height-1]))
                               where width = length (head ms)
+                                    height = length ms
 
-printRow :: [Tile] -> IO ()
-printRow ms = putStrLn $ concat (map tileToChar ms)
+showIndexCol :: Int -> String
+showIndexCol i | i < 10 = ' ' : show i ++ " "
+               | otherwise = show i ++ " "
+
+printRow :: ([Tile],Int) -> IO ()
+printRow (ms,r) = putStrLn ((showIndexCol r) ++ concat (map tileToChar ms))
 
 tileToChar :: Tile -> String
-tileToChar Unknown = "# "
-tileToChar Mine = "m "
-tileToChar Empty = "■ "
-tileToChar (Num 0) = "0 "
-tileToChar (Num i) = intToDigit i : " "
-tileToChar Flag = "X "
+tileToChar Unknown   = "[#]"
+tileToChar Mine      = "[m]"
+tileToChar Empty     = " ■ "
+tileToChar (Num 0)   = "[0]"
+tileToChar (Num i)   = " " ++ intToDigit i : " "
+tileToChar Flag      = "[X]"
 
 examplePlay :: IO ()
 examplePlay = play exampleGame
@@ -46,9 +52,9 @@ play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lo
                         if checkIfWon userMinefield minefield then print "Congrats, you won"
                         else play Game {userM = um, logicM = minefield, hasWon = won, hasLost = lost}
             else 
-               do let userM = revealTile userMinefield minefield p
+               do let um = revealTile userMinefield minefield p
                   if checkIfWon userMinefield minefield then print "Congrats, you won"
-                  else play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
+                  else play Game {userM = um, logicM = minefield, hasWon = won, hasLost = lost}
       else 
          do putStr "Invalid input"
             play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}

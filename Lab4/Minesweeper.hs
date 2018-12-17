@@ -25,12 +25,14 @@ cell mines tiles = frequency [(mines, return Mine),
 
 instance Arbitrary Minefield where
     arbitrary =
-        do height <- choose (1,20)  --Set height at atleast one row
+        do height <- choose (1,30)  --Set height at atleast one row
            width <- choose (2,30)   --Set width so that there is atleast 2 cells and at most 20*30
            mines <- choose (1, width*height-1) -- Probability to get mines
            mf <- vectorOf height (vectorOf width (cell mines (width*height)))
            return (Minefield mf)
 
+--generateMinefield :: StdGen -> Int -> Int -> Int -> Minefield
+--generateMinefield g w h nm = System.Random.shuffle' (vectorOf nm Mine ++ vectorOf (w*h-nm) Empty) (w*h) g
 -- w 14 h 7
 exampleMinefield :: Minefield
 exampleMinefield = 
@@ -52,6 +54,9 @@ allUnknowns = Minefield [[Unknown | x <- [1..14]] | x <- [1..7]]
 
 allEmpties :: Minefield
 allEmpties = Minefield [[Empty | x <- [1..14]] | x <- [1..7]]
+
+allEmpty :: Int -> Int -> Minefield
+allEmpty w h = Minefield [[Empty | x <- [1..w]] | x <- [1..h]]
 
 amountTile :: Minefield -> Tile -> Int
 amountTile (Minefield m) t = length $ filter (== t) (concat m)
