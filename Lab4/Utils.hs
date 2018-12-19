@@ -121,7 +121,7 @@ shuffle' g [] new = (new,g)
 shuffle' g old new = shuffle' g' (delete newElement old) (newElement : new)
         where 
             newElement = old !! i
-            (i, g') = randomR (0,((length old)-1)) g
+            (i, g') = randomR (0,length old-1) g
 
 -- Generates a random Minefield given a StdGen width height and amount of mines
 randomMinefield :: StdGen -> Int -> Int -> Int -> Minefield
