@@ -31,11 +31,11 @@ tileToChar Flag      = "[X]"
 
 main :: IO ()
 main = 
-   do putStrLn ("What width do you want?")
+   do putStrLn "What width do you want?"
       w <- readLn
-      putStrLn ("What height do you want?")
+      putStrLn "What height do you want?"
       h <- readLn
-      putStrLn ("How many mines do you want?")
+      putStrLn "How many mines do you want?"
       nm <- readLn
       gen <- newStdGen
       let game = Game {userM = allUnknowns w h, 
