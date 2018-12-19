@@ -4,13 +4,15 @@ import Minesweeper
 import Utils
 
 import Data.Char
+import System.Random
 
 printMinefield :: Minefield -> IO ()
-printMinefield (Minefield ms) = do putStr "\n    0 "
-                                   putStrLn $ concatMap showIndexCol [1..width-1]
-                                   mapM_ printRow (zip ms [0..height-1])
-                              where width = length (head ms)
-                                    height = length ms
+printMinefield (Minefield ms) = 
+   do putStr "\n    0 "
+      putStrLn $ concatMap showIndexCol [1..width-1]
+      mapM_ printRow (zip ms [0..height-1])
+   where width = length (head ms)
+         height = length ms
 
 showIndexCol :: Int -> String
 showIndexCol i | i < 10 = ' ' : show i ++ " "
@@ -27,32 +29,48 @@ tileToChar (Num 0)   = "[0]"
 tileToChar (Num i)   = " " ++ intToDigit i : " "
 tileToChar Flag      = "[X]"
 
-examplePlay :: IO ()
-examplePlay = play exampleGame
+main :: IO ()
+main = 
+   do putStrLn ("What width do you want?")
+      w <- readLn
+      putStrLn ("What height do you want?")
+      h <- readLn
+      putStrLn ("How many mines do you want?")
+      nm <- readLn
+      gen <- newStdGen
+      let game = Game {userM = allUnknowns w h, 
+                       logicM = randomMinefield gen w h nm, 
+                       hasWon = False, 
+                       hasLost = False}
+      printMinefield (randomMinefield gen w h nm)
+      play game
 
-exampleGame :: Game
-exampleGame = Game {userM = allUnknowns, logicM = exampleMinefield, hasWon = False, hasLost = False}
 
 play :: Game -> IO ()
 play Game {hasWon = True} = print "Congrats! You Won!"
 play Game {hasLost = True} = print "You lost"
-play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost} = 
+play Game {userM = userMinefield, logicM = minefield, 
+           hasWon = won, hasLost = lost} = 
    do printMinefield userMinefield
-      putStrLn "Enter a command ('f' to set flag, 's' to select or 'q' to quit"
+      putStrLn "Enter a token ('f' to set flag, 's' to select or 'q' to quit"
       char <- getChar
       if char == 'q' then print "Bye Bye"
       else if char == 'f' then
          do p <- askForPos
-            play Game {userM = update userMinefield p Flag, logicM = minefield, hasWon = won, hasLost = lost}
+            play Game {userM = update userMinefield p Flag, 
+                       logicM = minefield, 
+                       hasWon = won, hasLost = lost}
       else if char == 's' then 
          do p <- askForPos
             if getTileAtPos userMinefield p == Flag then
                do c <- askForConfirmation
-                  if 'y' /= c then play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
+                  if 'y' /= c then play Game {userM = userMinefield, 
+                                              logicM = minefield, 
+                                              hasWon = won, hasLost = lost}
                   else 
-                     do let newGame = revealTile Game {userM   = userMinefield,
-                                                       logicM  = minefield,
-                                                       hasWon  = won,
+                     do let newGame = revealTile Game {userM = userMinefield,
+                                                       logicM = minefield,
+                                                       hasWon = won,
                                                        hasLost = lost} p
                         play $ checkIfWon newGame
             else 
@@ -63,7 +81,8 @@ play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lo
                   play $ checkIfWon newGame
       else 
          do putStr "Invalid input"
-            play Game {userM = userMinefield, logicM = minefield, hasWon = won, hasLost = lost}
+            play Game {userM = userMinefield, logicM = minefield, 
+                       hasWon = won, hasLost = lost}
 
 
 
@@ -85,5 +104,6 @@ askForPos =
       return (r,c)
 
 askForConfirmation :: IO Char
-askForConfirmation = do putStrLn "Are you sure you want to reveal a flag? ('y'/'n')"
-                        getChar
+askForConfirmation = 
+   do putStrLn "Are you sure you want to reveal a flag? ('y'/'n')"
+      getChar

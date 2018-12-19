@@ -5,13 +5,13 @@ import Test.QuickCheck
 
 data Tile = Unknown | Flag | Num Int | Mine | Empty
     deriving (Eq, Show)
-
--- The Idea is to have two minefields, one which represents the actual state (Mines or empties)
--- and one to represent what the user knows (Unknown, Flag, Num Int, Mine or Empties)
+-- A minefield either represents the logic state (Mines or empty)
+-- or it can represent what the user sees (any tile)
 newtype Minefield = Minefield { rows :: [[Tile]]}
     deriving (Eq, Show)
 
-data Game = Game {userM :: Minefield, logicM :: Minefield, hasWon :: Bool, hasLost :: Bool}
+data Game = Game {userM :: Minefield, logicM :: Minefield, 
+                  hasWon :: Bool, hasLost :: Bool}
     deriving Show
 
 instance Arbitrary Tile where
@@ -26,41 +26,24 @@ cell mines tiles = frequency [(mines, return Mine),
 instance Arbitrary Minefield where
     arbitrary =
         do height <- choose (1,30)  --Set height at atleast one row
-           width <- choose (2,30)   --Set width so that there is atleast 2 cells and at most 20*30
+           width <- choose (2,30)   --Set width between 2 and 30
            mines <- choose (1, width*height-1) -- Probability to get mines
            mf <- vectorOf height (vectorOf width (cell mines (width*height)))
            return (Minefield mf)
 
---generateMinefield :: StdGen -> Int -> Int -> Int -> Minefield
---generateMinefield g w h nm = System.Random.shuffle' (vectorOf nm Mine ++ vectorOf (w*h-nm) Empty) (w*h) g
--- w 14 h 7
-exampleMinefield :: Minefield
-exampleMinefield = 
-    Minefield [
-        [e,e,m,e,e,e,m,m,m,e,e,e,m,e],
-        [e,e,m,e,e,e,m,e,e,e,e,e,m,e], 
-        [e,e,e,e,e,e,e,e,e,e,m,m,e,e], 
-        [e,e,e,e,e,e,e,m,m,e,m,e,m,e], 
-        [e,e,e,e,e,e,e,m,m,m,e,e,e,e], 
-        [e,e,e,m,e,m,e,e,m,e,m,m,e,e], 
-        [e,e,m,e,e,e,e,e,m,e,e,e,e,e] 
-    ]
-    where 
-        m = Mine
-        e = Empty
+-- Creates a minefield of @w width and @h height with only Unknown
+allUnknowns :: Int -> Int -> Minefield
+allUnknowns w h= Minefield [[Unknown | x <- [1..w]] | x <- [1..h]]
 
-allUnknowns :: Minefield
-allUnknowns = Minefield [[Unknown | x <- [1..14]] | x <- [1..7]]
-
-allEmpties :: Minefield
-allEmpties = Minefield [[Empty | x <- [1..14]] | x <- [1..7]]
-
+-- Creates a minefield of @w width and @h height with only Empty
 allEmpty :: Int -> Int -> Minefield
 allEmpty w h = Minefield [[Empty | x <- [1..w]] | x <- [1..h]]
 
+-- Returns the amount of a specific tile in the Minefield
 amountTile :: Minefield -> Tile -> Int
 amountTile (Minefield m) t = length $ filter (== t) (concat m)
 
+-- Checks so the minefield has equally long rows
 isMinefield :: Minefield -> Bool
 isMinefield (Minefield (m:ms)) = all (isMinefield' (length m)) ms
 
