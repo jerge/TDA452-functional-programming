@@ -42,7 +42,6 @@ main =
                        logicM = randomMinefield gen w h nm, 
                        hasWon = False, 
                        hasLost = False}
-      printMinefield (randomMinefield gen w h nm)
       play game
 
 
