@@ -1,0 +1,22 @@
+main 4 4 2
+- Klicka på flaggor
+- Klicka på empty
+- Lös
+- Redo och förlora
+
+printMinefield $ randomMinefield (mkStdGen 1337) 10 10 10
+- Visa kod
+- Förklara krånglighet med shuffle och med StdGen och hur vi löste de
+    - Pseudorandom
+
+revealTile
+- Tog väldigt lång tid att komma på någon bra metod
+- Vi kom på en, metod som fungerar oftast och gör iallafall inte rejältfel
+    - Ibland missar den att reveala någon enstaka neighbour
+    - Detta sker på grund utav att vi inte dubbelkollar för alla 8 potentiella grannar
+    - Detta för att vi började med att inte reveala diagonala grannar, 
+            för att vi tänkte inte att det var en grej
+    - Och eftersom att vi inte lyckades göra detta på ett generiskt vis (tyvärr), så glömde vi fixa det
+    - Vi hade velat lösa det med Folds, 
+            men vi hade redan lagt ner alldeles för lång tid på metoden och behövde bli klara
+    
